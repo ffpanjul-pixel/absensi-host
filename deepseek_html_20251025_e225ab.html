@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Game Kuis Berstage</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #6a11cb 0%, #2575fc 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.9);
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            width: 100%;
+            max-width: 800px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2.5rem;
+        }
+
+        h2 {
+            color: #444;
+            margin-bottom: 15px;
+            font-size: 1.8rem;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 20px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .stage {
+            display: none;
+        }
+
+        .active {
+            display: block;
+        }
+
+        .btn {
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(to right, #f46b45, #eea849);
+        }
+
+        /* Stage 1 Styles */
+        .question-container {
+            background-color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin: 20px 0;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .question {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option {
+            background-color: #f5f5f5;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px 15px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+        }
+
+        .option:hover {
+            background-color: #e9e9e9;
+            border-color: #c0c0c0;
+        }
+
+        .option.selected {
+            background-color: #d1ecf1;
+            border-color: #17a2b8;
+        }
+
+        .notification {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+            font-weight: bold;
+            display: none;
+        }
+
+        .correct {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .incorrect {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background-color: #e0e0e0;
+            border-radius: 5px;
+            margin: 20px 0;
+            overflow: hidden;
+        }
+
+        .progress {
+            height: 100%;
+            background: linear-gradient(to right, #6a11cb, #2575fc);
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        /* Stage 2 Styles */
+        .puzzle-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            margin: 20px 0;
+        }
+
+        .puzzle-image {
+            width: 300px;
+            height: 300px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            gap: 2px;
+            overflow: hidden;
+        }
+
+        .puzzle-piece {
+            background-color: #fff;
+            border: 1px solid #ddd;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .puzzle-piece:hover {
+            background-color: #f0f0f0;
+        }
+
+        .puzzle-piece.empty {
+            background-color: #f5f5f5;
+            cursor: default;
+        }
+
+        .puzzle-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+
+        /* Stage 3 Styles */
+        .boxes-container {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .box {
+            height: 100px;
+            background: linear-gradient(to bottom right, #6a11cb, #2575fc);
+            border-radius: 10px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .box:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .box.selected {
+            transform: scale(0.95);
+        }
+
+        .box.lolos {
+            background: linear-gradient(to bottom right, #00b09b, #96c93d);
+        }
+
+        .box.zonk {
+            background: linear-gradient(to bottom right, #ff416c, #ff4b2b);
+        }
+
+        .result-message {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .win {
+            background-color: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .lose {
+            background-color: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 15px;
+            }
+            
+            h1 {
+                font-size: 2rem;
+            }
+            
+            .boxes-container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .puzzle-image {
+                width: 250px;
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Stage 0: Intro -->
+        <div class="stage active" id="stage0">
+            <h1>Selamat Datang di Game Kuis Berstage!</h1>
+            <p>Game ini terdiri dari 3 stage yang harus Anda selesaikan:</p>
+            <ul style="text-align: left; margin: 20px 0; padding-left: 20px;">
+                <li>Stage 1: Kuis Sejarah - 10 soal pilihan ganda</li>
+                <li>Stage 2: Puzzle - Susun gambar dengan benar</li>
+                <li>Stage 3: Kotak Keberuntungan - Pilih kotak yang tepat untuk lolos</li>
+            </ul>
+            <p>Selamat bermain dan semoga beruntung!</p>
+            <button class="btn" id="startBtn">Mulai Game</button>
+        </div>
+
+        <!-- Stage 1: Kuis Sejarah -->
+        <div class="stage" id="stage1">
+            <h1>Stage 1: Kuis Sejarah</h1>
+            <div class="progress-bar">
+                <div class="progress" id="progressBar"></div>
+            </div>
+            <div class="question-container">
+                <div class="question" id="questionText"></div>
+                <div class="options" id="optionsContainer"></div>
+            </div>
+            <div class="notification" id="notification"></div>
+            <button class="btn" id="nextBtn" disabled>Soal Berikutnya</button>
+        </div>
+
+        <!-- Stage 2: Puzzle -->
+        <div class="stage" id="stage2">
+            <h1>Stage 2: Susun Puzzle</h1>
+            <p>Susunlah potongan-potongan puzzle berikut dengan benar!</p>
+            <div class="puzzle-container">
+                <div class="puzzle-image" id="puzzleBoard"></div>
+                <div class="puzzle-controls">
+                    <button class="btn" id="shuffleBtn">Acak Puzzle</button>
+                    <button class="btn" id="checkPuzzleBtn">Periksa</button>
+                </div>
+            </div>
+            <div class="notification" id="puzzleNotification"></div>
+            <button class="btn" id="nextStage2Btn" disabled>Lanjut ke Stage 3</button>
+        </div>
+
+        <!-- Stage 3: Kotak Keberuntungan -->
+        <div class="stage" id="stage3">
+            <h1>Stage 3: Kotak Keberuntungan</h1>
+            <p>Pilih salah satu dari 8 kotak di bawah. Hanya 1 kotak yang berisi "LOLOS", sisanya adalah "ZONK"!</p>
+            <div class="boxes-container" id="boxesContainer"></div>
+            <div class="result-message" id="resultMessage"></div>
+            <button class="btn" id="restartBtn">Main Lagi</button>
+        </div>
+    </div>
+
+    <script>
+        // Data soal sejarah
+        const questions = [
+            {
+                question: "Siapa proklamator kemerdekaan Indonesia?",
+                options: ["Soekarno-Hatta", "Soeharto-B.J. Habibie", "Gus Dur-Megawati", "Jokowi-Jusuf Kalla"],
+                correct: 0
+            },
+            {
+                question: "Kapan Indonesia merdeka?",
+                options: ["17 Agustus 1945", "27 Desember 1949", "1 Juni 1945", "28 Oktober 1928"],
+                correct: 0
+            },
+            {
+                question: "Sumpah Pemuda diikrarkan pada tanggal?",
+                options: ["28 Oktober 1928", "17 Agustus 1945", "10 November 1945", "20 Mei 1908"],
+                correct: 0
+            },
+            {
+                question: "Siapa presiden pertama Indonesia?",
+                options: ["Soekarno", "Soeharto", "B.J. Habibie", "Mohammad Hatta"],
+                correct: 0
+            },
+            {
+                question: "Peristiwa Bandung Lautan Api terjadi pada tahun?",
+                options: ["1946", "1945", "1947", "1948"],
+                correct: 0
+            },
+            {
+                question: "Siapa pahlawan nasional yang dikenal dengan sebutan 'Bapak Pendidikan Nasional'?",
+                options: ["Ki Hajar Dewantara", "R.A. Kartini", "Dewi Sartika", "Mohammad Hatta"],
+                correct: 0
+            },
+            {
+                question: "Peristiwa G30S/PKI terjadi pada tahun?",
+                options: ["1965", "1945", "1955", "1975"],
+                correct: 0
+            },
+            {
+                question: "Siapa yang menciptakan lagu Indonesia Raya?",
+                options: ["W.R. Supratman", "C. Simanjuntak", "Ismail Marzuki", "Gesang"],
+                correct: 0
+            },
+            {
+                question: "Kapan Belanda mengakui kedaulatan Indonesia?",
+                options: ["27 Desember 1949", "17 Agustus 1945", "10 November 1945", "1 Maret 1949"],
+                correct: 0
+            },
+            {
+                question: "Siapa tokoh perempuan yang memperjuangkan emansipasi wanita melalui surat-suratnya?",
+                options: ["R.A. Kartini", "Cut Nyak Dien", "Martha Christina Tiahahu", "Nyi Ageng Serang"],
+                correct: 0
+            }
+        ];
+
+        // Variabel global
+        let currentStage = 0;
+        let currentQuestion = 0;
+        let score = 0;
+        let selectedOption = null;
+        let puzzlePieces = [1, 2, 3, 4, 5, 6, 7, 8, null];
+        let emptyIndex = 8;
+        let boxes = [];
+
+        // Elemen DOM
+        const stages = document.querySelectorAll('.stage');
+        const startBtn = document.getElementById('startBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const nextStage2Btn = document.getElementById('nextStage2Btn');
+        const restartBtn = document.getElementById('restartBtn');
+        const questionText = document.getElementById('questionText');
+        const optionsContainer = document.getElementById('optionsContainer');
+        const notification = document.getElementById('notification');
+        const progressBar = document.getElementById('progressBar');
+        const puzzleBoard = document.getElementById('puzzleBoard');
+        const shuffleBtn = document.getElementById('shuffleBtn');
+        const checkPuzzleBtn = document.getElementById('checkPuzzleBtn');
+        const puzzleNotification = document.getElementById('puzzleNotification');
+        const boxesContainer = document.getElementById('boxesContainer');
+        const resultMessage = document.getElementById('resultMessage');
+
+        // Event Listeners
+        startBtn.addEventListener('click', startGame);
+        nextBtn.addEventListener('click', nextQuestion);
+        nextStage2Btn.addEventListener('click', goToStage3);
+        restartBtn.addEventListener('click', restartGame);
+        shuffleBtn.addEventListener('click', shufflePuzzle);
+        checkPuzzleBtn.addEventListener('click', checkPuzzle);
+
+        // Fungsi untuk memulai game
+        function startGame() {
+            currentStage = 1;
+            showStage(currentStage);
+            loadQuestion();
+        }
+
+        // Fungsi untuk menampilkan stage
+        function showStage(stageNumber) {
+            stages.forEach(stage => stage.classList.remove('active'));
+            document.getElementById(`stage${stageNumber}`).classList.add('active');
+            
+            if (stageNumber === 2) {
+                initializePuzzle();
+            } else if (stageNumber === 3) {
+                initializeBoxes();
+            }
+        }
+
+        // Fungsi untuk memuat soal
+        function loadQuestion() {
+            const question = questions[currentQuestion];
+            questionText.textContent = `${currentQuestion + 1}. ${question.question}`;
+            
+            optionsContainer.innerHTML = '';
+            question.options.forEach((option, index) => {
+                const optionElement = document.createElement('div');
+                optionElement.className = 'option';
+                optionElement.textContent = option;
+                optionElement.dataset.index = index;
+                optionElement.addEventListener('click', selectOption);
+                optionsContainer.appendChild(optionElement);
+            });
+            
+            notification.style.display = 'none';
+            nextBtn.disabled = true;
+            updateProgressBar();
+        }
+
+        // Fungsi untuk memilih opsi jawaban
+        function selectOption(e) {
+            if (selectedOption !== null) {
+                return;
+            }
+            
+            const selectedElement = e.target;
+            const selectedIndex = parseInt(selectedElement.dataset.index);
+            
+            // Hapus seleksi sebelumnya
+            document.querySelectorAll('.option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            
+            // Tandai opsi yang dipilih
+            selectedElement.classList.add('selected');
+            selectedOption = selectedIndex;
+            
+            // Periksa jawaban
+            const isCorrect = selectedIndex === questions[currentQuestion].correct;
+            
+            // Tampilkan notifikasi
+            notification.textContent = isCorrect ? 'Jawaban Benar!' : 'Jawaban Salah!';
+            notification.className = `notification ${isCorrect ? 'correct' : 'incorrect'}`;
+            notification.style.display = 'block';
+            
+            // Update skor
+            if (isCorrect) {
+                score++;
+            }
+            
+            // Aktifkan tombol next
+            nextBtn.disabled = false;
+        }
+
+        // Fungsi untuk pindah ke soal berikutnya
+        function nextQuestion() {
+            selectedOption = null;
+            currentQuestion++;
+            
+            if (currentQuestion < questions.length) {
+                loadQuestion();
+            } else {
+                // Pindah ke stage 2
+                currentStage = 2;
+                showStage(currentStage);
+            }
+        }
+
+        // Fungsi untuk memperbarui progress bar
+        function updateProgressBar() {
+            const progress = ((currentQuestion + 1) / questions.length) * 100;
+            progressBar.style.width = `${progress}%`;
+        }
+
+        // Fungsi untuk inisialisasi puzzle
+        function initializePuzzle() {
+            puzzleBoard.innerHTML = '';
+            shufflePuzzle();
+            renderPuzzle();
+        }
+
+        // Fungsi untuk mengacak puzzle
+        function shufflePuzzle() {
+            // Reset puzzle
+            puzzlePieces = [1, 2, 3, 4, 5, 6, 7, 8, null];
+            emptyIndex = 8;
+            
+            // Lakukan beberapa gerakan acak
+            for (let i = 0; i < 100; i++) {
+                const possibleMoves = getPossibleMoves(emptyIndex);
+                const randomMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
+                movePiece(randomMove);
+            }
+            
+            renderPuzzle();
+            puzzleNotification.style.display = 'none';
+            nextStage2Btn.disabled = true;
+        }
+
+        // Fungsi untuk mendapatkan gerakan yang mungkin
+        function getPossibleMoves(emptyIndex) {
+            const moves = [];
+            const row = Math.floor(emptyIndex / 3);
+            const col = emptyIndex % 3;
+            
+            // Atas
+            if (row > 0) moves.push(emptyIndex - 3);
+            // Bawah
+            if (row < 2) moves.push(emptyIndex + 3);
+            // Kiri
+            if (col > 0) moves.push(emptyIndex - 1);
+            // Kanan
+            if (col < 2) moves.push(emptyIndex + 1);
+            
+            return moves;
+        }
+
+        // Fungsi untuk memindahkan potongan puzzle
+        function movePiece(index) {
+            // Tukar posisi
+            [puzzlePieces[emptyIndex], puzzlePieces[index]] = [puzzlePieces[index], puzzlePieces[emptyIndex]];
+            emptyIndex = index;
+        }
+
+        // Fungsi untuk merender puzzle
+        function renderPuzzle() {
+            puzzleBoard.innerHTML = '';
+            
+            puzzlePieces.forEach((piece, index) => {
+                const pieceElement = document.createElement('div');
+                pieceElement.className = `puzzle-piece ${piece === null ? 'empty' : ''}`;
+                pieceElement.textContent = piece !== null ? piece : '';
+                pieceElement.dataset.index = index;
+                
+                if (piece !== null) {
+                    pieceElement.addEventListener('click', () => {
+                        const clickedIndex = parseInt(pieceElement.dataset.index);
+                        const possibleMoves = getPossibleMoves(emptyIndex);
+                        
+                        if (possibleMoves.includes(clickedIndex)) {
+                            movePiece(clickedIndex);
+                            renderPuzzle();
+                        }
+                    });
+                }
+                
+                puzzleBoard.appendChild(pieceElement);
+            });
+        }
+
+        // Fungsi untuk memeriksa puzzle
+        function checkPuzzle() {
+            const isSolved = puzzlePieces.every((piece, index) => {
+                return piece === (index < 8 ? index + 1 : null);
+            });
+            
+            if (isSolved) {
+                puzzleNotification.textContent = 'Selamat! Puzzle berhasil disusun dengan benar!';
+                puzzleNotification.className = 'notification correct';
+                puzzleNotification.style.display = 'block';
+                nextStage2Btn.disabled = false;
+            } else {
+                puzzleNotification.textContent = 'Puzzle belum benar, coba lagi!';
+                puzzleNotification.className = 'notification incorrect';
+                puzzleNotification.style.display = 'block';
+            }
+        }
+
+        // Fungsi untuk pindah ke stage 3
+        function goToStage3() {
+            currentStage = 3;
+            showStage(currentStage);
+        }
+
+        // Fungsi untuk inisialisasi kotak
+        function initializeBoxes() {
+            boxesContainer.innerHTML = '';
+            resultMessage.style.display = 'none';
+            
+            // Buat array dengan 1 "LOLOS" dan 7 "ZONK"
+            boxes = Array(8).fill('ZONK');
+            const luckyIndex = Math.floor(Math.random() * 8);
+            boxes[luckyIndex] = 'LOLOS';
+            
+            // Render kotak
+            boxes.forEach((box, index) => {
+                const boxElement = document.createElement('div');
+                boxElement.className = 'box';
+                boxElement.textContent = '?';
+                boxElement.dataset.index = index;
+                boxElement.addEventListener('click', selectBox);
+                boxesContainer.appendChild(boxElement);
+            });
+        }
+
+        // Fungsi untuk memilih kotak
+        function selectBox(e) {
+            const boxElement = e.target;
+            const boxIndex = parseInt(boxElement.dataset.index);
+            
+            // Tandai kotak yang dipilih
+            boxElement.classList.add('selected');
+            
+            // Tampilkan hasil
+            setTimeout(() => {
+                boxElement.textContent = boxes[boxIndex];
+                
+                if (boxes[boxIndex] === 'LOLOS') {
+                    boxElement.classList.add('lolos');
+                    resultMessage.textContent = 'Selamat! Anda LOLOS dan memenangkan game!';
+                    resultMessage.className = 'result-message win';
+                } else {
+                    boxElement.classList.add('zonk');
+                    resultMessage.textContent = 'Sayang sekali, Anda ZONK! Coba lagi!';
+                    resultMessage.className = 'result-message lose';
+                }
+                
+                resultMessage.style.display = 'block';
+                
+                // Nonaktifkan semua kotak
+                document.querySelectorAll('.box').forEach(box => {
+                    box.style.pointerEvents = 'none';
+                });
+            }, 500);
+        }
+
+        // Fungsi untuk memulai ulang game
+        function restartGame() {
+            currentStage = 0;
+            currentQuestion = 0;
+            score = 0;
+            selectedOption = null;
+            
+            showStage(currentStage);
+        }
+    </script>
+</body>
+</html>
